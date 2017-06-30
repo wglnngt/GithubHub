@@ -31,7 +31,7 @@ function init() {
     fi
 
     cd "$BASE"
-    if [ -e "$GITPRIVATE" ] || [ -e "GITPUBLIC" ];
+    if [ -e "$GITPRIVATE" ] || [ -e "$GITPUBLIC" ];
 	then 
 	error "Pem files exits with the same name. Exit."
 	exit 1
@@ -54,7 +54,7 @@ function push() {
     rm -f "$ROOTREPO"
     info "Encrypt $REPO from $LEAF_DIR to $ROOT_DIR"
     tar czf "$LEAFTMP" "$LEAFREPO"
-    openssl smime -encrypt -aes256 -binary -outform DEM -in "$LEAFTMP" -out "$ROOTREPO" "$BASE/$GITPUBLIC"
+    openssl smime -encrypt -aes256 -binary -outform DEM -in "$LEAFTMP" -out "$ROOTREPO" "${BASE_KEY}/$GITPUBLIC"
     rm -f "$LEAFTMP"
     cd "$ROOT_DIR"
     info "Add to Github"
@@ -76,7 +76,7 @@ function pull() {
     cd /
     info "Decrypting $ROOTREPO to $REPO"
     info "$TMP"
-    openssl smime -decrypt -binary -inform DEM -inkey "$BASE/$GITPRIVATE" -in "$ROOTREPO" -out "$LEAFTMP"
+    openssl smime -decrypt -binary -inform DEM -inkey "${BASE_KEY}/$GITPRIVATE" -in "$ROOTREPO" -out "$LEAFTMP"
     rm -rf "$LEAFREPO"
     tar xzf "$LEAFTMP"
     rm -r "$LEAFTMP"
@@ -100,6 +100,7 @@ LEAFREPO="$LEAF_DIR/$REPO"
 ROOTREPO="$ROOT_DIR/$REPO"
 LEAFTMP="$LEAF_DIR/$TMP"
 
+BASE_KEY="/etc"
 GITPRIVATE="git.private.pem"
 GITPUBLIC="git.public.pem"
 
